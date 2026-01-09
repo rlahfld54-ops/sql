@@ -1,0 +1,2 @@
+# sql
+studying sql
