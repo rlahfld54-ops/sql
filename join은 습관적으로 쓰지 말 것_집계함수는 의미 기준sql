@@ -1,0 +1,65 @@
+🧩 실무 시나리오 예제 2
+“최근 7일간 재구매율이 높은 고객 찾기”
+📌 상황
+
+“최근 7일 안에 주문을 2번 이상 한 고객 목록을 뽑아주세요.”
+
+
+📂 테이블 구조
+users (
+  user_id     INT,
+  signup_date DATE
+)
+
+orders (
+  order_id    INT,
+  user_id     INT,
+  order_date  DATETIME,
+  status      VARCHAR
+)
+
+
+📌 유효 주문 조건
+
+status = 'COMPLETED' *구매한 사람을 COMPLETED라고 상태가 바뀜
+
+
+#내가 생각한 쿼리
+select u.user_id
+from users u
+join orders o
+on u.user_id = o.user_id
+where order_date >= today()-7
+and order_date =< today()
+and o.status = 'COMPLETED'
+group by u.user_id
+having count(u.user_id)>=2;
+
+
+user_id만 필요한데 join 불필요하다. orders 테이블에서 해결가능
+JOIN은 습관적으로 쓰지 말 것
+
+COUNT 대상은 “의미” 기준으로
+
+✅ 더 명확한 표현
+HAVING COUNT(o.order_id) >= 2
+
+
+👉 “주문 2건 이상”이 분명해짐
+
+* 내가 이렇게 작성한 이유  :: having count(u.user_id)>=2;
+order_id는 주문번호라고 생각하는데 보통 쇼핑몰보면 65464154 이런 식으로 적혀있어서
+구분하기 애매하다고 생각했음. 그래서 1정규화처럼 user_id를 사용해야겠다고 판단함
+근데 지금 다시 생각해보니까 주문번호가 중복될리가 없는데..?
+o.order_id가 맞네
+
+
+#답
+SELECT
+    o.user_id
+FROM orders o
+WHERE o.order_date >= NOW() - INTERVAL 7 DAY
+  AND o.order_date < NOW()
+  AND o.status = 'COMPLETED'
+GROUP BY o.user_id
+HAVING COUNT(*) >= 2;
